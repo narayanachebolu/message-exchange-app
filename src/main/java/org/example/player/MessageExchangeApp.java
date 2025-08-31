@@ -7,6 +7,8 @@ import org.example.player.coordinator.MessageExchangeCoordinator;
 import org.example.player.exception.MessageExchangeException;
 import org.example.player.message.Message;
 
+import java.util.logging.*;
+
 /**
  * This is the application entry point for the Message Exchange System. This class handles command-line arguments
  * and coordinates the execution of both same-process and separate-process message exchange scenarios.
@@ -19,6 +21,32 @@ import org.example.player.message.Message;
  * - Provide user-friendly error messages and usage information.
  */
 public class MessageExchangeApp {
+    // ---------- Logging setup ----------
+    private static final Logger LOG = Logger.getLogger(MessageExchangeApp.class.getName());
+    static {
+        // Simple console logger config
+        
+        // remove default handlers
+        for (Handler h : LOG.getHandlers()) {
+            LOG.removeHandler(h);
+        }
+
+        LOG.setUseParentHandlers(false);
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setLevel(Level.INFO);
+
+        // Custom formatter: only print the message
+        handler.setFormatter(new Formatter() {
+            @Override
+            public String format(LogRecord record) {
+                return record.getMessage() + System.lineSeparator();
+            }
+        });
+
+        LOG.addHandler(handler);
+        LOG.setLevel(Level.INFO);
+    }
+
     private static final String USAGE =
             "Usage:\n" +
                     "  Same process:     java -jar message-exchange-app.jar same-process\n" +
@@ -32,7 +60,7 @@ public class MessageExchangeApp {
     public static void main(String[] args) {
         try {
             if (args.length == 0) {
-                System.out.println(USAGE);
+                LOG.info(USAGE);
                 System.exit(1);
             }
 
@@ -48,13 +76,12 @@ public class MessageExchangeApp {
                     break;
 
                 default:
-                    System.err.println("Unknown mode: " + mode);
-                    System.out.println(USAGE);
+                    LOG.log(Level.SEVERE, "Unknown mode: " + mode);
+                    LOG.info(USAGE);
                     System.exit(1);
             }
         } catch (Exception e) {
-            System.err.println("Application failed: " + e.getMessage());
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "Application failed: " + e.getMessage(), e);
             System.exit(1);
         }
     }
@@ -64,7 +91,7 @@ public class MessageExchangeApp {
      * Uses in-process channel for message exchange between players.
      */
     private static void runSameProcessMessageExchange() throws MessageExchangeException, InterruptedException {
-        System.out.println("=== Same Process Message Exchange Mode ===");
+        LOG.info("=== Same Process Message Exchange Mode ===");
 
         // Create shared in-process channels
         InProcessChannel initiatorToCoplayer = new InProcessChannel("initiator->coplayer");
@@ -74,19 +101,19 @@ public class MessageExchangeApp {
         Player initiator = new Player("Initiator", new CrossConnectedChannel(initiatorToCoplayer, coplayerToInitiator));
         Player coplayer = new Player("Coplayer", new CrossConnectedChannel(coplayerToInitiator, initiatorToCoplayer));
 
-        // Create and run the game
+        // Create and start the message exchange among players.
         MessageExchangeCoordinator coordinator = new MessageExchangeCoordinator(initiator, coplayer);
         coordinator.startMessageExchange();
     }
 
     /**
-     * Runs the message exchange game with players in separate JVM processes.
+     * Start the message exchange among the players in separate JVM processes.
      * Uses socket-based message exchange between players.
      */
     private static void runSeparateProcessMessageExchange(String[] args) throws MessageExchangeException, InterruptedException {
         if (args.length < 3) {
-            System.err.println("Separate process mode requires additional arguments");
-            System.out.println(USAGE);
+            LOG.info("Separate process mode requires additional arguments");
+            LOG.info(USAGE);
             System.exit(1);
         }
 
@@ -104,7 +131,7 @@ public class MessageExchangeApp {
                 break;
 
             default:
-                System.err.println("Unknown role: " + role + ". Use 'server' or 'client'");
+                LOG.log(Level.SEVERE, "Unknown role: " + role + ". Use 'server' or 'client'");
                 System.exit(1);
         }
     }
@@ -113,8 +140,8 @@ public class MessageExchangeApp {
      * Runs this process as the server (responder) player.
      */
     private static void runAsServer(int port) throws MessageExchangeException, InterruptedException {
-        System.out.println("=== Separate Process Message Exchange Mode - Server (Responder) ===");
-        System.out.println("Starting server on port " + port);
+        LOG.info("=== Separate Process Message Exchange Mode - Server (Responder) ===");
+        LOG.info("Starting server on port " + port);
 
         SocketChannel serverChannel = new SocketChannel(port);
         Player responder = new Player("Server-Responder", serverChannel);
@@ -124,7 +151,7 @@ public class MessageExchangeApp {
         try {
             // Server acts as responder - waits for messages and responds
             for (int i = 0; i < 10; i++) {
-                System.out.println("--- Server Round " + (i + 1) + " ---");
+                LOG.info("--- Server Round " + (i + 1) + " ---");
 
                 // Receive message from client
                 Message receivedMessage = responder.receiveMessage();
@@ -133,8 +160,8 @@ public class MessageExchangeApp {
                 responder.sendResponse(receivedMessage);
             }
 
-            System.out.println("=== Server Message Exchange Completed ===");
-            System.out.println("Server sent " + responder.getMessageCounter() + " response messages");
+            LOG.info("=== Server Message Exchange Completed ===");
+            LOG.info("Server sent " + responder.getMessageCounter() + " response messages");
 
         } finally {
             responder.disconnect();
@@ -145,8 +172,8 @@ public class MessageExchangeApp {
      * Runs this process as the client (initiator) player.
      */
     private static void runAsClient(String host, int port) throws MessageExchangeException, InterruptedException {
-        System.out.println("=== Separate Process Message Exchange Mode - Client (Initiator) ===");
-        System.out.println("Connecting to server at " + host + ":" + port);
+        LOG.info("=== Separate Process Message Exchange Mode - Client (Initiator) ===");
+        LOG.info("Connecting to server at " + host + ":" + port);
 
         SocketChannel clientChannel = new SocketChannel(host, port);
         Player initiator = new Player("Client-Initiator", clientChannel);
@@ -158,7 +185,7 @@ public class MessageExchangeApp {
 
             // Client acts as initiator - sends messages and receives responses
             for (int i = 0; i < 10; i++) {
-                System.out.println("--- Client Round " + (i + 1) + " ---");
+                LOG.info("--- Client Round " + (i + 1) + " ---");
 
                 // Send message to server
                 initiator.sendMessage(currentMessage, "Server-Responder");
@@ -170,8 +197,8 @@ public class MessageExchangeApp {
                 currentMessage = response.getContent();
             }
 
-            System.out.println("=== Client Message Exchange Completed ===");
-            System.out.println("Client sent " + initiator.getMessageCounter() + " initial messages");
+            LOG.info("=== Client Message Exchange Completed ===");
+            LOG.info("Client sent " + initiator.getMessageCounter() + " initial messages");
 
         } finally {
             initiator.disconnect();

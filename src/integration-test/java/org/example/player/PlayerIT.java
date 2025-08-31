@@ -35,7 +35,7 @@ class PlayerIT {
         Player responder = new Player("Responder",
                 new CrossConnectedChannel(coplayerToInitiator, initiatorToCoplayer));
 
-        // Test the complete game
+        // Test the complete message exchange
         MessageExchangeCoordinator coordinator = new MessageExchangeCoordinator(initiator, responder);
         coordinator.startMessageExchange();
 
@@ -194,7 +194,7 @@ class PlayerIT {
     @Test
     @DisplayName("Message Exchange Coordinator should handle edge cases gracefully")
     @Timeout(10)
-    void testGameCoordinatorEdgeCases() throws Exception {
+    void testMessageExchangeCoordinatorEdgeCases() throws Exception {
         InProcessChannel channel1 = new InProcessChannel("edge1");
         InProcessChannel channel2 = new InProcessChannel("edge2");
 

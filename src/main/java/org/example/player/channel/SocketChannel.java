@@ -7,10 +7,14 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
 import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
+
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Socket-based implementation of MessageExchangeChannel for cross-process communication.
@@ -25,6 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * - Manage connection lifecycle and error handling.
  */
 public class SocketChannel implements MessageExchangeChannel {
+    private static final Logger LOG = Logger.getLogger(SocketChannel.class.getName());
+
     private final String host;
     private final int port;
     private final boolean isServer;
@@ -78,7 +84,7 @@ public class SocketChannel implements MessageExchangeChannel {
             outputStream.flush(); // Important: flush the header
             inputStream = new ObjectInputStream(socket.getInputStream());
 
-            System.out.println("SocketChannel connected - " +
+            LOG.fine("SocketChannel connected - " +
                     (isServer ? "Server on port " + port : "Client to " + host + ":" + port));
 
         } catch (IOException e) {
@@ -89,9 +95,9 @@ public class SocketChannel implements MessageExchangeChannel {
 
     private void connectAsServer() throws IOException {
         serverSocket = new ServerSocket(port);
-        System.out.println("Server listening on port " + port);
+        LOG.fine("Server listening on port " + port);
         socket = serverSocket.accept();
-        System.out.println("Server accepted connection from " + socket.getRemoteSocketAddress());
+        LOG.fine("Server accepted connection from " + socket.getRemoteSocketAddress());
     }
 
     private void connectAsClient() throws IOException {
@@ -100,11 +106,11 @@ public class SocketChannel implements MessageExchangeChannel {
         for (int i = 0; i < maxRetries; i++) {
             try {
                 socket = new Socket(host, port);
-                System.out.println("Client connected to " + host + ":" + port);
+                LOG.fine("Client connected to " + host + ":" + port);
                 return;
             } catch (ConnectException e) {
                 if (i == maxRetries - 1) throw e;
-                System.out.println("Connection attempt " + (i + 1) + " failed, retrying...");
+                LOG.log(Level.SEVERE, "Connection attempt " + (i + 1) + " failed, retrying...");
                 try {
                     Thread.sleep(1000); // Wait 1 second before retry
                 } catch (InterruptedException ie) {
@@ -124,7 +130,7 @@ public class SocketChannel implements MessageExchangeChannel {
         try {
             outputStream.writeObject(message);
             outputStream.flush();
-            System.out.println("Sent message via socket: " + message);
+            LOG.fine("Sent message via socket: " + message);
         } catch (IOException e) {
             throw new MessageExchangeException("Failed to send message via socket", e);
         }
@@ -138,7 +144,7 @@ public class SocketChannel implements MessageExchangeChannel {
 
         try {
             Message message = (Message) inputStream.readObject();
-            System.out.println("Received message via socket: " + message);
+            LOG.fine("Received message via socket: " + message);
             return message;
         } catch (IOException | ClassNotFoundException e) {
             throw new MessageExchangeException("Failed to receive message via socket", e);
@@ -158,7 +164,7 @@ public class SocketChannel implements MessageExchangeChannel {
             closeQuietly(socket);
             closeQuietly(serverSocket);
 
-            System.out.println("SocketChannel closed - " +
+            LOG.fine("SocketChannel closed - " +
                     (isServer ? "Server" : "Client"));
         }
     }
@@ -168,7 +174,7 @@ public class SocketChannel implements MessageExchangeChannel {
             try {
                 closeable.close();
             } catch (IOException e) {
-                System.err.println("Error closing resource: " + e.getMessage());
+                LOG.log(Level.SEVERE, "Error closing resource: " + e.getMessage());
             }
         }
     }

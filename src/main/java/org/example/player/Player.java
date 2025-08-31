@@ -7,6 +7,7 @@ import org.example.player.message.SimpleMessage;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 /**
  * Represents a player that can exchange a message with other players. Each player has a unique ID and can
@@ -21,6 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * - Support both initiator and coplayer roles in message exchange.
  */
 public class Player {
+    private static final Logger LOG = Logger.getLogger(Player.class.getName());
+
     private final String playerId;
     private final MessageExchangeChannel channel;
     private final AtomicInteger messageCounter;
@@ -44,7 +47,7 @@ public class Player {
      */
     public void connect() throws MessageExchangeException {
         channel.connect();
-        System.out.println("Player " + playerId + " connected");
+        LOG.fine("Player " + playerId + " connected");
     }
 
     /**
@@ -59,7 +62,7 @@ public class Player {
         Message message = new SimpleMessage(content, playerId, recipientId, sequenceNumber);
         channel.sendMessage(message);
 
-        System.out.println(String.format("Player %s sent message #%d: '%s' to %s",
+        LOG.info(String.format("Player %s sent message #%d: '%s' to %s",
                 playerId, sequenceNumber, content, recipientId));
     }
 
@@ -72,7 +75,7 @@ public class Player {
      */
     public Message receiveMessage() throws MessageExchangeException, InterruptedException {
         Message message = channel.receiveMessage();
-        System.out.println(String.format("Player %s received message from %s: '%s'",
+        LOG.info(String.format("Player %s received message from %s: '%s'",
                 playerId, message.getSenderId(), message.getContent()));
         return message;
     }
@@ -87,7 +90,7 @@ public class Player {
     public String createResponse(Message receivedMessage) {
         int currentCounter = messageCounter.get() + 1; // Counter for the response message
         String response = receivedMessage.getContent() + " " + currentCounter;
-        System.out.println(String.format("Player %s created response: '%s'", playerId, response));
+        LOG.fine(String.format("Player %s created response: '%s'", playerId, response));
         return response;
     }
 
@@ -136,7 +139,7 @@ public class Player {
      */
     public void disconnect() {
         channel.close();
-        System.out.println("Player " + playerId + " disconnected");
+        LOG.fine("Player " + playerId + " disconnected");
     }
 
     @Override

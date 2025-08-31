@@ -6,6 +6,7 @@ import org.example.player.message.Message;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
 /**
  * In-process implementation of MessageExchangeChannel within the same-process. Uses blocking queues to enable
@@ -18,6 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * - Support graceful shutdown and resource cleanup
  */
 public class InProcessChannel implements MessageExchangeChannel {
+    private static final Logger LOG = Logger.getLogger(InProcessChannel.class.getName());
+
     private final BlockingQueue<Message> messageQueue;
     private final AtomicBoolean connected;
     private final String channelId;
@@ -38,7 +41,7 @@ public class InProcessChannel implements MessageExchangeChannel {
         if (!connected.compareAndSet(false, true)) {
             throw new MessageExchangeException("Channel " + channelId + " is already connected");
         }
-        System.out.println("InProcessChannel " + channelId + " connected");
+        LOG.fine("InProcessChannel " + channelId + " connected");
     }
 
     @Override
@@ -49,7 +52,7 @@ public class InProcessChannel implements MessageExchangeChannel {
 
         try {
             messageQueue.offer(message);
-            System.out.println("Sent message via InProcessChannel " + channelId + ": " + message);
+            LOG.fine("Sent message via InProcessChannel " + channelId + ": " + message);
         } catch (Exception e) {
             throw new MessageExchangeException("Failed to send message via channel " + channelId, e);
         }
@@ -63,7 +66,7 @@ public class InProcessChannel implements MessageExchangeChannel {
 
         try {
             Message message = messageQueue.take(); // Blocks until message is available
-            System.out.println("Received message via InProcessChannel " + channelId + ": " + message);
+            LOG.fine("Received message via InProcessChannel " + channelId + ": " + message);
             return message;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // Restore interrupt status
@@ -82,7 +85,7 @@ public class InProcessChannel implements MessageExchangeChannel {
     public void close() {
         if (connected.compareAndSet(true, false)) {
             messageQueue.clear();
-            System.out.println("InProcessChannel " + channelId + " closed");
+            LOG.fine("InProcessChannel " + channelId + " closed");
         }
     }
 

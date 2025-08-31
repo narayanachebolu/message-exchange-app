@@ -30,13 +30,4 @@ public class MessageExchangeException extends Exception {
     public MessageExchangeException(String message, Throwable cause) {
         super(message, cause);
     }
-
-    /**
-     * Creates a new exchange exception wrapping another exception.
-     *
-     * @param cause the underlying cause of this exception
-     */
-    public MessageExchangeException(Throwable cause) {
-        super(cause);
-    }
 }

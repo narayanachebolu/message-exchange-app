@@ -4,18 +4,23 @@ import org.example.player.Player;
 import org.example.player.exception.MessageExchangeException;
 import org.example.player.message.Message;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Coordinates the message exchange between two players. This class implements the core logic where one
  * player (initiator) sends messages and the other player responds, continuing until the stop condition is met.
  *
  * Responsibilities:
  * - Orchestrate the message exchange between two players.
- * - Enforce game rules (10 messages limit, proper sequencing).
+ * - Enforce message exchange rules (10 messages limit, proper sequencing).
  * - Handle both initiator and coplayer logic.
- * - Provide clean game lifecycle management.
- * - Report game results and statistics.
+ * - Provide clean message exchange lifecycle management.
+ * - Report: Message exchange results and statistics.
  */
 public class MessageExchangeCoordinator {
+    private static final Logger LOG = Logger.getLogger(MessageExchangeCoordinator.class.getName());
+
     private static final int MAX_MESSAGES = 10;
     private static final String INITIAL_MESSAGE = "Hello";
 
@@ -23,7 +28,7 @@ public class MessageExchangeCoordinator {
     private final Player coplayer;
 
     /**
-     * Creates a new game coordinator with the specified players.
+     * Creates a new message exchange coordinator with the specified players.
      *
      * @param initiator the player who will start the message exchange
      * @param coplayer the player who will respond to messages
@@ -37,15 +42,14 @@ public class MessageExchangeCoordinator {
      * Starts the complete message exchange cycle. The initiator sends messages and receives responses until the
      * limit is reached.
      *
-     * @throws MessageExchangeException if message exchange fails during the game
-     * @throws InterruptedException   if the game is interrupted
+     * @throws MessageExchangeException if message exchange fails
+     * @throws InterruptedException   if the message exchange is interrupted
      */
     public void startMessageExchange() throws MessageExchangeException, InterruptedException {
-        System.out.println("=== Starting Message Exchange ===");
-        System.out.println("Initiator: " + initiator.getPlayerId());
-        System.out.println("Coplayer: " + coplayer.getPlayerId());
-        System.out.println("Message limit: " + MAX_MESSAGES);
-        System.out.println();
+        LOG.info("=== Starting Message Exchange ===");
+        LOG.info("Initiator: " + initiator.getPlayerId());
+        LOG.info("Coplayer: " + coplayer.getPlayerId());
+        LOG.info("Message limit: " + MAX_MESSAGES);
 
         // Connect both players
         initiator.connect();
@@ -56,7 +60,7 @@ public class MessageExchangeCoordinator {
             runMessageExchange();
 
             // Print final results
-            printGameResults();
+            printMessageExchangeResults();
 
         } finally {
             // Ensure cleanup happens
@@ -71,7 +75,7 @@ public class MessageExchangeCoordinator {
         String currentMessage = INITIAL_MESSAGE;
 
         for (int round = 1; round <= MAX_MESSAGES; round++) {
-            System.out.println("--- Round " + round + " ---");
+            LOG.info("--- Round " + round + " ---");
 
             // Initiator sends message
             initiator.sendMessage(currentMessage, coplayer.getPlayerId());
@@ -88,20 +92,20 @@ public class MessageExchangeCoordinator {
             // Update message for next round (use the response content)
             currentMessage = response.getContent();
 
-            System.out.println("Round " + round + " completed");
-            System.out.println();
+            LOG.info("Round " + round + " completed");
+            LOG.info("------------");
         }
     }
 
     /**
-     * Prints the final game results and statistics.
+     * Prints the final message exchange results and statistics.
      */
-    private void printGameResults() {
-        System.out.println("=== Game Completed Successfully ===");
-        System.out.println("Final Statistics:");
-        System.out.println("- Initiator (" + initiator.getPlayerId() + ") sent: " + initiator.getMessageCounter() + " messages");
-        System.out.println("- Coplayer (" + coplayer.getPlayerId() + ") sent: " + coplayer.getMessageCounter() + " messages");
-        System.out.println("- Total rounds completed: " + MAX_MESSAGES);
+    private void printMessageExchangeResults() {
+        LOG.info("=== Message Exchange Completed Successfully ===");
+        LOG.info("Final Statistics:");
+        LOG.info("- Initiator (" + initiator.getPlayerId() + ") sent: " + initiator.getMessageCounter() + " messages");
+        LOG.info("- Coplayer (" + coplayer.getPlayerId() + ") sent: " + coplayer.getMessageCounter() + " messages");
+        LOG.info("- Total rounds completed: " + MAX_MESSAGES);
     }
 
     /**
@@ -111,31 +115,13 @@ public class MessageExchangeCoordinator {
         try {
             initiator.disconnect();
         } catch (Exception e) {
-            System.err.println("Error disconnecting initiator: " + e.getMessage());
+            LOG.log(Level.WARNING, "Error disconnecting initiator: " + e.getMessage());
         }
 
         try {
             coplayer.disconnect();
         } catch (Exception e) {
-            System.err.println("Error disconnecting coplayer: " + e.getMessage());
+            LOG.log(Level.WARNING, "Error disconnecting coplayer: " + e.getMessage());
         }
-    }
-
-    /**
-     * Gets the initiator player.
-     *
-     * @return the initiator player
-     */
-    public Player getInitiator() {
-        return initiator;
-    }
-
-    /**
-     * Gets the coplayer player.
-     *
-     * @return the coplayer player
-     */
-    public Player getCoplayer() {
-        return coplayer;
     }
 }
