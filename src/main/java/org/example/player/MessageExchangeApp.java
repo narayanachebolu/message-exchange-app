@@ -94,6 +94,7 @@ public class MessageExchangeApp {
      */
     private static void runSameProcessMessageExchange() throws MessageExchangeException, InterruptedException {
         LOG.info("=== Same Process Message Exchange Mode ===");
+        LOG.info("Process ID (pid): " + ProcessHandle.current().pid());
         LOG.info("");
 
         // Create shared in-process channels
@@ -140,35 +141,36 @@ public class MessageExchangeApp {
     }
 
     /**
-     * Runs this process as the server (responder) player.
+     * Runs this process as the server (coplayer) player.
      */
     private static void runAsServer(int port) throws MessageExchangeException, InterruptedException {
-        LOG.info("=== Separate Process Message Exchange Mode - Server (Responder) ===");
+        LOG.info("=== Separate Process Message Exchange Mode - Server (coplayer) ===");
         LOG.info("");
-        LOG.info("Starting server on port " + port);
+        LOG.info("*** Starting server on port " + port + " ***");
+        LOG.info("Process ID (pid): " + ProcessHandle.current().pid());
 
         SocketChannel serverChannel = new SocketChannel(port);
-        Player responder = new Player("Server-Responder", serverChannel);
+        Player coplayer = new Player("Server-Coplayer", serverChannel);
 
-        responder.connect();
+        coplayer.connect();
 
         try {
-            // Server acts as responder - waits for messages and responds
+            // Server acts as coplayer - waits for messages and responds
             for (int i = 0; i < 10; i++) {
                 LOG.info("--- Server Round " + (i + 1) + " ---");
 
                 // Receive message from client
-                Message receivedMessage = responder.receiveMessage();
+                Message receivedMessage = coplayer.receiveMessage();
 
                 // Send response back
-                responder.sendResponse(receivedMessage);
+                coplayer.sendResponse(receivedMessage);
             }
 
-            LOG.info("=== Server Message Exchange Completed ===");
-            LOG.info("Server sent " + responder.getMessageCounter() + " response messages");
+            LOG.info("*** Server Message Exchange Completed ***");
+            LOG.info("Server sent " + coplayer.getMessageCounter() + " response messages");
 
         } finally {
-            responder.disconnect();
+            coplayer.disconnect();
         }
     }
 
@@ -178,7 +180,8 @@ public class MessageExchangeApp {
     private static void runAsClient(String host, int port) throws MessageExchangeException, InterruptedException {
         LOG.info("=== Separate Process Message Exchange Mode - Client (Initiator) ===");
         LOG.info("");
-        LOG.info("Connecting to server at " + host + ":" + port);
+        LOG.info("*** Connecting to server at " + host + ":" + port + " ***");
+        LOG.info("Process ID (pid): " + ProcessHandle.current().pid());
 
         SocketChannel clientChannel = new SocketChannel(host, port);
         Player initiator = new Player("Client-Initiator", clientChannel);
@@ -193,16 +196,16 @@ public class MessageExchangeApp {
                 LOG.info("--- Client Round " + (i + 1) + " ---");
 
                 // Send message to server
-                initiator.sendMessage(currentMessage, "Server-Responder");
+                initiator.sendMessage(currentMessage, "Server-Coplayer");
 
-                // Receive response from server
-                Message response = initiator.receiveMessage();
+                // Receive response from server (coplayer)
+                Message coplayer = initiator.receiveMessage();
 
                 // Use response content for next message
-                currentMessage = response.getContent();
+                currentMessage = coplayer.getContent();
             }
 
-            LOG.info("=== Client Message Exchange Completed ===");
+            LOG.info("*** Client Message Exchange Completed ***");
             LOG.info("Client sent " + initiator.getMessageCounter() + " initial messages");
 
         } finally {

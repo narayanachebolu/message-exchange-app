@@ -26,7 +26,7 @@ print_usage() {
     echo ""
     echo "Modes:"
     echo "  same-process          Run both players in the same JVM process"
-    echo "  server <port>         Run as server (responder) player"
+    echo "  server <port>         Run as server (coplayer) player"
     echo "  client <port> [host]  Run as client (initiator) player"
     echo "  build                 Build the project using Maven"
     echo "  test                  Run unit and integration tests"

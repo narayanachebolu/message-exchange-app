@@ -48,7 +48,9 @@ public class MessageExchangeCoordinator {
     public void startMessageExchange() throws MessageExchangeException, InterruptedException {
         LOG.info("*** Starting Message Exchange ***");
         LOG.info("Player 1: " + initiator.getPlayerId());
+        LOG.info("Player 1: Process Id (pid): " + ProcessHandle.current().pid());
         LOG.info("Player 2: " + coplayer.getPlayerId());
+        LOG.info("Player 2: Process Id (pid): " + ProcessHandle.current().pid());
         LOG.info("Message limit: " + MAX_MESSAGES);
         LOG.info("");
 
@@ -76,7 +78,7 @@ public class MessageExchangeCoordinator {
         String currentMessage = INITIAL_MESSAGE;
 
         for (int round = 1; round <= MAX_MESSAGES; round++) {
-            LOG.info("--- " + round + " ---");
+            LOG.info("--- Round " + round + " ---");
 
             // Initiator sends message
             initiator.sendMessage(currentMessage, coplayer.getPlayerId());
