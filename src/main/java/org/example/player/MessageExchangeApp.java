@@ -21,17 +21,17 @@ import java.util.logging.*;
  * - Provide user-friendly error messages and usage information.
  */
 public class MessageExchangeApp {
-    // ---------- Logging setup ----------
-    private static final Logger LOG = Logger.getLogger(MessageExchangeApp.class.getName());
+    // ---------- Logging setup: Simple console logger config ----------
     static {
-        // Simple console logger config
-        
+        // get root logger
+        Logger rootLogger = Logger.getLogger("");
+
         // remove default handlers
-        for (Handler h : LOG.getHandlers()) {
-            LOG.removeHandler(h);
+        for (Handler h : rootLogger.getHandlers()) {
+            rootLogger.removeHandler(h);
         }
 
-        LOG.setUseParentHandlers(false);
+        rootLogger.setUseParentHandlers(false);
         ConsoleHandler handler = new ConsoleHandler();
         handler.setLevel(Level.INFO);
 
@@ -43,9 +43,11 @@ public class MessageExchangeApp {
             }
         });
 
-        LOG.addHandler(handler);
-        LOG.setLevel(Level.INFO);
+        rootLogger.addHandler(handler);
+        rootLogger.setLevel(Level.INFO);
     }
+
+    private static final Logger LOG = Logger.getLogger(MessageExchangeApp.class.getName());
 
     private static final String USAGE =
             "Usage:\n" +
@@ -92,6 +94,7 @@ public class MessageExchangeApp {
      */
     private static void runSameProcessMessageExchange() throws MessageExchangeException, InterruptedException {
         LOG.info("=== Same Process Message Exchange Mode ===");
+        LOG.info("");
 
         // Create shared in-process channels
         InProcessChannel initiatorToCoplayer = new InProcessChannel("initiator->coplayer");
@@ -141,6 +144,7 @@ public class MessageExchangeApp {
      */
     private static void runAsServer(int port) throws MessageExchangeException, InterruptedException {
         LOG.info("=== Separate Process Message Exchange Mode - Server (Responder) ===");
+        LOG.info("");
         LOG.info("Starting server on port " + port);
 
         SocketChannel serverChannel = new SocketChannel(port);
@@ -173,6 +177,7 @@ public class MessageExchangeApp {
      */
     private static void runAsClient(String host, int port) throws MessageExchangeException, InterruptedException {
         LOG.info("=== Separate Process Message Exchange Mode - Client (Initiator) ===");
+        LOG.info("");
         LOG.info("Connecting to server at " + host + ":" + port);
 
         SocketChannel clientChannel = new SocketChannel(host, port);

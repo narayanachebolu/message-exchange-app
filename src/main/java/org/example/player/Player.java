@@ -62,8 +62,9 @@ public class Player {
         Message message = new SimpleMessage(content, playerId, recipientId, sequenceNumber);
         channel.sendMessage(message);
 
-        LOG.info(String.format("Player %s sent message #%d: '%s' to %s",
-                playerId, sequenceNumber, content, recipientId));
+        LOG.info(String.format("%s -> '%s' -> %s", playerId, content, recipientId));
+        LOG.fine(String.format("Player %s sent message #%d: '%s' to %s", playerId, sequenceNumber, content,
+                recipientId));
     }
 
     /**
@@ -75,8 +76,8 @@ public class Player {
      */
     public Message receiveMessage() throws MessageExchangeException, InterruptedException {
         Message message = channel.receiveMessage();
-        LOG.info(String.format("Player %s received message from %s: '%s'",
-                playerId, message.getSenderId(), message.getContent()));
+        LOG.fine(String.format("Player %s received message from %s: '%s'", playerId, message.getSenderId(),
+                message.getContent()));
         return message;
     }
 

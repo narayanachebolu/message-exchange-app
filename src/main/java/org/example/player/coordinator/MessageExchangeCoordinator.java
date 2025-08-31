@@ -46,10 +46,11 @@ public class MessageExchangeCoordinator {
      * @throws InterruptedException   if the message exchange is interrupted
      */
     public void startMessageExchange() throws MessageExchangeException, InterruptedException {
-        LOG.info("=== Starting Message Exchange ===");
-        LOG.info("Initiator: " + initiator.getPlayerId());
-        LOG.info("Coplayer: " + coplayer.getPlayerId());
+        LOG.info("*** Starting Message Exchange ***");
+        LOG.info("Player 1: " + initiator.getPlayerId());
+        LOG.info("Player 2: " + coplayer.getPlayerId());
         LOG.info("Message limit: " + MAX_MESSAGES);
+        LOG.info("");
 
         // Connect both players
         initiator.connect();
@@ -75,7 +76,7 @@ public class MessageExchangeCoordinator {
         String currentMessage = INITIAL_MESSAGE;
 
         for (int round = 1; round <= MAX_MESSAGES; round++) {
-            LOG.info("--- Round " + round + " ---");
+            LOG.info("--- " + round + " ---");
 
             // Initiator sends message
             initiator.sendMessage(currentMessage, coplayer.getPlayerId());
@@ -92,8 +93,8 @@ public class MessageExchangeCoordinator {
             // Update message for next round (use the response content)
             currentMessage = response.getContent();
 
-            LOG.info("Round " + round + " completed");
-            LOG.info("------------");
+            LOG.fine("--- Round " + round + " completed ---");
+            LOG.info("");
         }
     }
 
@@ -101,10 +102,11 @@ public class MessageExchangeCoordinator {
      * Prints the final message exchange results and statistics.
      */
     private void printMessageExchangeResults() {
-        LOG.info("=== Message Exchange Completed Successfully ===");
-        LOG.info("Final Statistics:");
-        LOG.info("- Initiator (" + initiator.getPlayerId() + ") sent: " + initiator.getMessageCounter() + " messages");
-        LOG.info("- Coplayer (" + coplayer.getPlayerId() + ") sent: " + coplayer.getMessageCounter() + " messages");
+        LOG.info("*** Message Exchange Completed ***");
+        LOG.info("");
+        LOG.info("Metrics:");
+        LOG.info("- Player 1 (" + initiator.getPlayerId() + ") sent: " + initiator.getMessageCounter() + " messages");
+        LOG.info("- Player 2 (" + coplayer.getPlayerId() + ") sent: " + coplayer.getMessageCounter() + " messages");
         LOG.info("- Total rounds completed: " + MAX_MESSAGES);
     }
 
