@@ -1,17 +1,32 @@
-# Message Exchange System
-A Java-based system that enables message exchange between players in both same-process and separate-process environments.
+# Message Exchange System (Synchronous)
+A Java-based system that enables synchronous message exchange between players in both same-process and separate-process.
 
 ## Overview
 
 This system implements a clean, extensible architecture for inter-player communication with the following key features:
 
-- **Dual Communication Modes**: Supports both same-process (in-process) and separate-process (socket-based) communication
-- **Clean Design**: Uses interfaces and dependency injection for maximum flexibility
-- **Thread-Safe**: Handles concurrent operations safely
-- **Comprehensive Testing**: Includes unit tests and integration tests
-- **Easy Deployment**: Single JAR with convenient shell script
+- **Modes**: Supports both same-process (in-process) and separate-process (socket-based) synchronous communication.
+- **Clean Design**: Uses interfaces and dependency injection for maximum flexibility.
+- **Thread-Safe**: Handles concurrent operations safely.
+- **Comprehensive Testing**: Includes unit tests and integration tests.
+- **Easy Deployment**: Single JAR with convenient shell script.
 
-## Usage
+## Tech Stack (mandatory - should be available for executing the program.)
+- JDK / JRE Version: **Java 11 and above**
+- Maven Installation
+
+## Instructions / Usage
+Open the Linux / WSL CLI and execute below commands.
+
+### Set permissions to shell script
+```bash
+chmod +x run.sh
+```
+
+### Building
+```bash
+./run.sh build
+```
 
 ### Same Process Communication
 
@@ -35,14 +50,14 @@ Players run in different JVM processes using socket communication:
 ./run.sh client 8080 localhost
 ```
 
-### Building and Testing
+### Testing
 
 ```bash
-# Build the project
-./run.sh build
-
-# Run unit and integration tests
+# Run unit tests
 ./run.sh test
+
+# Run integration tests
+./run.sh integration-tests
 
 # Complete demo (build + same-process execution)
 ./run.sh demo
